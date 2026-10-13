@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="APPLE-OS">
+<link rel="apple-touch-icon" href="https://i.imgur.com/8Km9tLL.png">
+<title>APPLE-OS</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+body{background:#000;overflow:hidden;height:100vh;width:100vw;color:#fff}
+#lockscreen{position:fixed;inset:0;background:radial-gradient(circle at 50% 0%, #1a2a4a 0%, #0a0a1a 50%, #000 100%);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:60px 20px 40px;transition:transform 0.6s cubic-bezier(.8,0,.2,1)}
+#lockscreen.hide{transform:translateY(-100%)}
+.top{ text-align:center }
+.top h1{font-weight:200;letter-spacing:8px;font-size:28px;color:#7df9ff;text-shadow:0 0 20px #7df9ff}
+.top p{color:#8a8aff;margin-top:5px;font-size:14px;letter-spacing:1px}
+.time{font-size:96px;font-weight:200;margin:20px 0 0;line-height:1}
+.date{opacity:.7;margin-top:5px}
+.swipe{margin-top:40px;animation:float 2s infinite;color:#7df9ff;font-size:14px}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+#homescreen{position:fixed;inset:0;background:radial-gradient(circle at 50% 0%, #121a2e 0%, #000 70%);padding:20px;display:flex;flex-direction:column}
+.grid{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:20px;align-content:start;margin-top:80px}
+.app{display:flex;flex-direction:column;align-items:center;gap:8px}
+.app-icon{width:68px;height:68px;border-radius:16px;background:rgba(255,255,255,.1);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 0 20px rgba(125,249,255,.2), inset 0 0 1px rgba(255,255,255,.2)}
+.app span{font-size:11px;opacity:.8}
+.dock{margin-top:auto;background:rgba(255,255,255,.08);backdrop-filter:blur(30px);border-radius:38px;padding:14px 20px;display:flex;justify-content:space-around;border:1px solid rgba(125,249,255,.3);box-shadow:0 0 40px rgba(125,249,255,.3)}
+.dock.app-icon{width:62px;height:62px;border-radius:18px}
+.dock.app-icon.green{background:#1dd45f;box-shadow:0 0 20px #1dd45f}
+.dock.app-icon.blue{background:#fff}
+.dock.app-icon.gray{background:#e5e5e5}
+.modal{position:fixed;inset:0;background:#111;z-index:50;transform:translateY(100%);transition:.4s;padding:20px}
+.modal.open{transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<div id="lockscreen" onclick="unlock()">
+  <div class="top">
+    <div style="font-size:28px">🔓</div>
+    <h1>APPLE-OS</h1>
+    <p>Secure • Version 1.0</p>
+    <div class="time" id="time">9:41</div>
+    <div class="date" id="date">Lundi 13 Octobre</div>
+    <div class="swipe">Swipe up to open — Face ID</div>
+  </div>
+  <div class="dock" style="width:100%">
+    <div class="app"><div class="app-icon green">💬</div><span>Messages</span></div>
+    <div class="app"><div class="app-icon blue">📷</div><span>Camera</span></div>
+    <div class="app"><div class="app-icon gray">⚙️</div><span>Settings</span></div>
+  </div>
+</div>
+
+<div id="homescreen">
+  <div class="grid" id="grid"></div>
+  <div class="dock" id="dock"></div>
+</div>
+
+<div class="modal" id="modal">
+  <div style="display:flex;justify-content:space-between"><h2 id="mtitle"></h2><span onclick="closeM()" style="font-size:28px">×</span></div>
+  <div id="mcontent" style="margin-top:20px"></div>
+</div>
+
+<script>
+function updateTime(){
+  const n=new Date();
+  document.getElementById('time').innerText=n.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('date').innerText=n.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+}
+setInterval(updateTime,1000);updateTime();
+function unlock(){document.getElementById('lockscreen').classList.add('hide')}
+let apps=[
+  {i:'💬',n:'Messages',c:'Messagerie APPLE-OS cryptée'},
+  {i:'📷',n:'Camera',c:'Camera 200MP APPLE-OS'},
+  {i:'⚙️',n:'Settings',c:'APPLE-OS 1.0<br>Owner: 22896352213<br>Status: Secure'},
+  {i:'🧮',n:'Calcul',c:'<input id=a type=number placeholder=Nombre style=width:100%;padding:12px;border-radius:10px><br><br><button onclick=\"alert(Number(a.value)*2)\" style=padding:10px>×2</button>'},
+  {i:'📝',n:'Notes',c:'<textarea style=width:100%;height:200px;border-radius:12px;padding:10px placeholder=\"Note secrète...\"></textarea>'},
+  {i:'🍎',n:'Store',c:'Bienvenue sur Apple Store. App à venir...'},
+  {i:'🤖',n:'Bot',c:'Ton bot OVL-MD connecté.'},
+  {i:'🎮',n:'Game',c:'Mini jeu bientôt'},
+];
+const grid=document.getElementById('grid'); const dock=document.getElementById('dock');
+apps.forEach((ap,idx)=>{
+  let d=document.createElement('div'); d.className='app';
+  d.innerHTML=`<div class=app-icon>${ap.i}</div><span>${ap.n}</span>`;
+  d.onclick=()=>openM(ap);
+  if(idx<3) dock.appendChild(d.cloneNode(true)).onclick=()=>openM(ap);
+  else grid.appendChild(d);
+})
+function openM(ap){
+  document.getElementById('mtitle').innerText=ap.n;
+  document.getElementById('mcontent').innerHTML=ap.c;
+  document.getElementById('modal').classList.add('open');
+}
+function closeM(){document.getElementById('modal').classList.remove('open')}
+// Swipe
+let startY=0;
+document.getElementById('lockscreen').addEventListener('touchstart',e=>startY=e.touches[0].clientY)
+document.getElementById('lockscreen').addEventListener('touchend',e=>{ if(startY-e.changedTouches[0].clientY>80) unlock() })
+</script>
+</body>
+</html>
